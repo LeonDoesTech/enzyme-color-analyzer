@@ -7,17 +7,14 @@ st.set_page_config(page_title="Enzyme Color & Gradient Analyzer", layout="wide")
 st.title("Advanced Enzyme & Microplate Analyzer")
 st.write("Upload your test strip or microplate image to analyze color percentages across multiple states.")
 
-# --- Sidebar Controls ---
 st.sidebar.header("Analysis Settings")
 
-# Expanded color states up to 15
 num_colors = st.sidebar.slider(
     "Number of Color States", 
     min_value=2, max_value=15, value=6,
     help="Increase this if your plate/strip has many gradual concentration steps."
 )
 
-# Single streamlined slider replacing the confusing dual sliders
 filtering_strength = st.sidebar.slider(
     "Background & Border Filtering", 
     min_value=1, max_value=100, value=50,
@@ -27,7 +24,7 @@ filtering_strength = st.sidebar.slider(
 uploaded_file = st.file_uploader("Choose an image file", type=["png", "jpg", "jpeg", "webp"])
 
 if uploaded_file is not None:
-    # Read uploaded image bytes into OpenCV format
+
     file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
     img_bgr = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
     img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
@@ -38,11 +35,8 @@ if uploaded_file is not None:
         st.subheader("Uploaded Image")
         st.image(img_rgb, use_container_width=True)
 
-    # --- Dynamic Masking based on single slider ---
     gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
     
-    # Map the 1-100 slider to precise pixel threshold bounds dynamically
-    # Lower strength keeps more; higher strength aggressively clips out whites/blacks
     low_bound = int(np.interp(filtering_strength, [1, 100], [10, 80]))
     high_bound = int(np.interp(filtering_strength, [1, 100], [250, 225]))
 
@@ -61,7 +55,6 @@ if uploaded_file is not None:
             total_pixels = len(foreground_pixels)
             color_percentages = (pixel_counts / total_pixels) * 100
 
-            # Sort colors by percentage or appearance for cleaner display
             sorted_indices = np.argsort(color_percentages)[::-1]
 
         with col2:
